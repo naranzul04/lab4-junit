@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-
 @DisplayName("GradeCalculator классын нэгжийн тестүүд")
 class GradeCalculatorTest {
 
@@ -44,39 +43,57 @@ class GradeCalculatorTest {
     @Test
     @DisplayName("Ердийн утгууд: 95→A, 85→B, 75→C, 65→D, 30→F")
     void yerdiinUtguud() {
-        double[] onoonuud = { 95, 85, 75, 65, 30 };
-        String[] huleegdeh = { "A", "B", "C", "D", "F" };
+        double[] onoonuud = {95, 85, 75, 65, 30};
+        String[] huleegdeh = {"A", "B", "C", "D", "F"};
+
+        String[] bodit = new String[onoonuud.length];
+        for (int i = 0; i < onoonuud.length; i++) {
+            bodit[i] = calc.letterGrade(onoonuud[i]);
+        }
 
         assertAll(
-                () -> assertEquals(huleegdeh[0], calc.letterGrade(onoonuud[0])),
-                () -> assertEquals(huleegdeh[1], calc.letterGrade(onoonuud[1])),
-                () -> assertEquals(huleegdeh[2], calc.letterGrade(onoonuud[2])),
-                () -> assertEquals(huleegdeh[3], calc.letterGrade(onoonuud[3])),
-                () -> assertEquals(huleegdeh[4], calc.letterGrade(onoonuud[4])));
+                () -> assertEquals(huleegdeh[0], bodit[0]),
+                () -> assertEquals(huleegdeh[1], bodit[1]),
+                () -> assertEquals(huleegdeh[2], bodit[2]),
+                () -> assertEquals(huleegdeh[3], bodit[3]),
+                () -> assertEquals(huleegdeh[4], bodit[4]));
     }
 
     @Test
     @DisplayName("60 нь D, 59.99 нь F байх ёстой (тэнцэх хязгаар)")
     void tentsehHyazgaar() {
+        double tentssen = 60.0;
+        double unasan = 59.99;
+
+        String dun1 = calc.letterGrade(tentssen);
+        String dun2 = calc.letterGrade(unasan);
+
         assertAll(
-                () -> assertEquals("D", calc.letterGrade(60.0)),
-                () -> assertEquals("F", calc.letterGrade(59.99)));
+                () -> assertEquals("D", dun1),
+                () -> assertEquals("F", dun2));
     }
 
     @Test
     @DisplayName("Хүрээний захын утгууд: 0→F, 100→A")
     void huree0ba100() {
+        double dood = 0.0;
+        double deed = 100.0;
+
+        String dun1 = calc.letterGrade(dood);
+        String dun2 = calc.letterGrade(deed);
+
         assertAll(
-                () -> assertEquals("F", calc.letterGrade(0.0)),
-                () -> assertEquals("A", calc.letterGrade(100.0)));
+                () -> assertEquals("F", dun1),
+                () -> assertEquals("A", dun2));
     }
 
     @Test
-    @DisplayName("-1 оноо өгөхөд IllegalArgumentException ба зөв мессеж шидэх ёстой")
+    @DisplayName("-1 оноо өгөхөд IllegalArgumentException шидэх ёстой")
     void sorogOnoo() {
-        IllegalArgumentException aldaa = assertThrows(
-                IllegalArgumentException.class,
-                () -> calc.letterGrade(-1.0));
+        double onoo = -1.0;
+
+        IllegalArgumentException aldaa = assertThrows(IllegalArgumentException.class,
+                () -> calc.letterGrade(onoo));
 
         assertEquals("Оноо 0-100 хооронд байх ёстой: -1.0", aldaa.getMessage());
     }
@@ -84,13 +101,17 @@ class GradeCalculatorTest {
     @Test
     @DisplayName("101 оноо өгөхөд IllegalArgumentException шидэх ёстой")
     void hetersenOnoo() {
-        assertThrows(IllegalArgumentException.class, () -> calc.letterGrade(101.0));
+        double onoo = 101.0;
+
+        assertThrows(IllegalArgumentException.class, () -> calc.letterGrade(onoo));
     }
 
     @Test
     @DisplayName("Бүх хэсэг дээд оноотой бол нийлбэр 100 байх ёстой")
     void niilberZuv() {
-        double niit = calc.totalScore(10, 40, 10, 10, 30);
+        double irts = 10, lab = 40, soril1 = 10, soril2 = 10, shalgalt = 30;
+
+        double niit = calc.totalScore(irts, lab, soril1, soril2, shalgalt);
 
         assertEquals(100.0, niit, 1e-9);
     }
@@ -98,38 +119,41 @@ class GradeCalculatorTest {
     @Test
     @DisplayName("Ирц сөрөг (-5) бол totalScore exception шидэх ёстой")
     void irtsSorog() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> calc.totalScore(-5, 30, 8, 8, 20));
+        double irts = -5;
+
+        assertThrows(IllegalArgumentException.class,
+                () -> calc.totalScore(irts, 30, 8, 8, 20));
     }
 
     @Test
     @DisplayName("Лабын оноо 41 буюу дээд хязгаараас хэтэрвэл exception шидэх ёстой")
     void labHetersen() {
-        IllegalArgumentException aldaa = assertThrows(
-                IllegalArgumentException.class,
-                () -> calc.totalScore(10, 41, 10, 10, 30));
+        double lab = 41;
+
+        IllegalArgumentException aldaa = assertThrows(IllegalArgumentException.class,
+                () -> calc.totalScore(10, lab, 10, 10, 30));
 
         assertEquals("Лаб ба бие даалт 0-40 хооронд байх ёстой: 41.0", aldaa.getMessage());
     }
 
     @ParameterizedTest(name = "{0} оноо → {1}")
-    @CsvSource({
-            "95,A", "90,A", "89.99,B", "80,B", "79.99,C",
-            "70,C", "69.99,D", "60,D", "59.99,F", "0,F", "100,A"
-    })
+    @CsvSource({"95,A", "90,A", "89.99,B", "80,B", "79.99,C", "70,C", "69.99,D", "60,D", "59.99,F", "0,F", "100,A"})
     @DisplayName("letterGrade-ийн хязгаарын утгууд")
     void letterGradeHyazgaaruud(double onoo, String huleegdeh) {
-        String dun = calc.letterGrade(onoo);
+        GradeCalculator tootsooluur = new GradeCalculator();
+
+        String dun = tootsooluur.letterGrade(onoo);
 
         assertEquals(huleegdeh, dun);
     }
 
     @ParameterizedTest(name = "{0} оноо буруу оролт")
-    @ValueSource(doubles = { -1, -0.01, 100.01, 101, Double.NaN })
+    @ValueSource(doubles = {-1, -0.01, 100.01, 101, Double.NaN})
     @DisplayName("letterGrade хүрээнээс гадуурх утгад exception шиднэ")
     void letterGradeBuruuOrolt(double onoo) {
-        assertThrows(IllegalArgumentException.class, () -> calc.letterGrade(onoo));
+        GradeCalculator tootsooluur = new GradeCalculator();
+
+        assertThrows(IllegalArgumentException.class, () -> tootsooluur.letterGrade(onoo));
     }
 
     @ParameterizedTest(name = "{0}+{1}+{2}+{3}+{4} = {5}")
@@ -141,9 +165,10 @@ class GradeCalculatorTest {
             "5.5, 20.25, 3, 4, 15, 47.75"
     })
     @DisplayName("totalScore хүчинтэй утгуудын нийлбэрийг зөв тооцно")
-    void totalScoreZuvNiilber(
-            double irts, double lab, double soril1, double soril2, double shalgalt, double huleegdeh) {
-        double niit = calc.totalScore(irts, lab, soril1, soril2, shalgalt);
+    void totalScoreZuvNiilber(double irts, double lab, double soril1, double soril2, double shalgalt, double huleegdeh) {
+        GradeCalculator tootsooluur = new GradeCalculator();
+
+        double niit = tootsooluur.totalScore(irts, lab, soril1, soril2, shalgalt);
 
         assertEquals(huleegdeh, niit, 1e-9);
     }
@@ -162,10 +187,10 @@ class GradeCalculatorTest {
             "10, 40, 10, 10, 31"
     })
     @DisplayName("totalScore хэсэг бүрийн сөрөг ба хэтэрсэн утгад exception шиднэ")
-    void totalScoreBuruuOrolt(
-            double irts, double lab, double soril1, double soril2, double shalgalt) {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> calc.totalScore(irts, lab, soril1, soril2, shalgalt));
+    void totalScoreBuruuOrolt(double irts, double lab, double soril1, double soril2, double shalgalt) {
+        GradeCalculator tootsooluur = new GradeCalculator();
+
+        assertThrows(IllegalArgumentException.class,
+                () -> tootsooluur.totalScore(irts, lab, soril1, soril2, shalgalt));
     }
 }
